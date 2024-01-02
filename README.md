@@ -1,4 +1,4 @@
-Ulangan Akhir Semester 5 
+Ulangan Akhir Semester 5
 Mata Kuliah : Mobile Programming
 Nama : Fadlan Hafid Subechi
 NIM : 21195028
