@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>FadlanHS - UAS PWA</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="keywords" content="webapp, pwa, app shell">
+    <meta name="description" content="PWA">
+    <meta name="Author" content="Fadlan HS">
+	
+    <!-- manifest file -->
+	<link rel="manifest" href="manifest.json">
+
+    <!-- ios webapp  -->
+	<meta name="viewport" content="user-scalable=yes, width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+
+	<!-- chrome webapp  -->
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="theme-color" content="#cccccc">
+	<link rel="icon" sizes="144x144" href="img/icon_144.png">
+	<link rel="icon" sizes="192x192" href="img/icon_192.png">
+	<link rel="icon" sizes="512x512" href="img/icon_512.png">
+
+	<!-- win tile icon and background  -->
+	<meta name="msapplication-TileColor" content="#999999">
+	<meta name="msapplication-TileImage" content="img/icon_144.png">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Ubuntu:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <link rel="preload" href="/img/bg-hero.png" as="image">
+    <link rel="preload" href="/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="/css/style.css" as="style">
+    
+</head>
+
+<body>
+    <!-- Spinner Start -->
+    <div id="spinner"
+        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+    <!-- Navbar Start -->
+    <div class="container-fluid sticky-top">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-dark p-0">
+                <a href="index.html" class="navbar-brand">
+                    <img src="img/logo.png" alt="Logo" width="100" height="28">
+                </a>
+                <button type="button" class="navbar-toggler ms-auto me-0" data-bs-toggle="collapse" 
+                    data-bs-target="#navbarCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">Toggle navigation</span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto">
+                        <a href="index.html" class="nav-item nav-link">Home</a>
+                        <a href="indexeddb.html" class="nav-item nav-link active">IndexedDB</a>
+                        <a href="about.html" class="nav-item nav-link">Biodata</a>                        
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+
+    <!-- Hero Start -->
+    <div class="container-fluid pt-5 bg-primary hero-header">
+        <div class="container pt-5">
+            <div class="row g-5 pt-5">
+                <div class="col-lg-6 align-self-center text-center text-lg-start mb-lg-5">
+                    <h1 class="display-4 text-white mb-4 animated slideInRight">IndexedDB</h1>                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hero End -->
+
+    <!-- IndexedDb Start -->
+<div class="container indexeddb-container mt-5 mb-5">
+    <h1 class="text-center">Komentar</h1>
+    <form id="komentar-form">
+        <div class="form-group">
+            <label for="nama">Your Name</label>
+            <input type="text" class="form-control" id="nama" required>
+        </div>
+        <div class="form-group">
+            <label for="komentar">Message</label>
+            <textarea class="form-control" id="komentar" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+
+    <div class="komentar-area mt-4">
+        <h2 class="text-center">Komentar Terkini</h2>
+        <ul id="komentar-list" class="komentar-list"></ul>
+    </div>
+</div>
+
+
+    <script>
+        const dbName = "KomentarDB";
+        const storeName = "KomentarStore";
+
+        function initDatabase() {
+            const request = indexedDB.open(dbName, 1);
+
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                }
+            };
+
+            request.onsuccess = () => {
+                console.log("Database berhasil diinisialisasi");
+                muatKomentar();
+            };
+
+            request.onerror = (error) => {
+                console.error("Gagal menginisialisasi database:", error);
+            };
+        }
+
+        function muatKomentar() {
+            const request = indexedDB.open(dbName);
+
+            request.onsuccess = (event) => {
+                const db = event.target.result;
+                const transaction = db.transaction([storeName], "readonly");
+                const store = transaction.objectStore(storeName);
+
+                const komentarList = document.getElementById("komentar-list");
+                komentarList.innerHTML = "";
+
+                const komentarCursor = store.openCursor();
+
+                komentarCursor.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        const komentar = cursor.value;
+                        const listItem = document.createElement("li");
+                        listItem.className = "komentar-item";
+                        listItem.setAttribute('data-id', komentar.id);
+                        listItem.innerHTML = `
+                            <div class="komentar-head">
+                                <img src="img/user.png" alt="Avatar" class="avatar">
+                                <strong>${komentar.nama}</strong>
+                            </div>
+                            <div class="komentar-body">${komentar.komentar}</div>
+                            <button class="edit-btn" data-id="${komentar.id}">Edit</button>
+                            <button class="delete-btn" data-id="${komentar.id}">Delete</button>
+                            <div class="edit-form" style="display: none;">
+                                <textarea class="edit-komentar" rows="4"></textarea>
+                                <button class="save-btn" data-id="${komentar.id}">Save</button>
+                            </div>
+                        `;
+
+                        const editBtn = listItem.querySelector(".edit-btn");
+                        editBtn.addEventListener("click", () => {
+                            tampilkanFormEdit(komentar.id);
+                        });
+
+                        const saveBtn = listItem.querySelector(".save-btn");
+                        saveBtn.addEventListener("click", () => {
+                            simpanKomentar(komentar.id);
+                        });
+
+                        const deleteBtn = listItem.querySelector(".delete-btn");
+                        deleteBtn.addEventListener("click", () => {
+                            hapusKomentar(komentar.id);
+                        });
+
+                        komentarList.appendChild(listItem);
+
+                        cursor.continue();
+                    }
+                };
+            };
+        }
+
+        function tampilkanFormEdit(id) {
+            const listItem = document.querySelector(`.komentar-item[data-id="${id}"]`);
+            if (listItem) {
+                const editForm = listItem.querySelector(".edit-form");
+                const editKomentar = listItem.querySelector(".edit-komentar");
+                const komentarBody = listItem.querySelector(".komentar-body");
+
+                komentarBody.style.display = "none";
+                editForm.style.display = "block";
+                editKomentar.value = komentarBody.textContent;
+            }
+        }
+
+        function simpanKomentar(id) {
+            const listItem = document.querySelector(`.komentar-item[data-id="${id}"]`);
+            if (listItem) {
+                const editForm = listItem.querySelector(".edit-form");
+                const editKomentar = listItem.querySelector(".edit-komentar");
+                const komentarBody = listItem.querySelector(".komentar-body");
+
+                const request = indexedDB.open(dbName);
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    const transaction = db.transaction([storeName], "readwrite");
+                    const store = transaction.objectStore(storeName);
+
+                    const editRequest = store.get(id);
+                    editRequest.onsuccess = () => {
+                        const komentarData = editRequest.result;
+                        komentarData.komentar = editKomentar.value;
+
+                        const updateRequest = store.put(komentarData);
+                        updateRequest.onsuccess = () => {
+                            editForm.style.display = "none";
+                            komentarBody.style.display = "block";
+                            komentarBody.textContent = editKomentar.value;
+                        };
+                    };
+                };
+            }
+        }
+
+        function hapusKomentar(id) {
+            const request = indexedDB.open(dbName);
+
+            request.onsuccess = (event) => {
+                const db = event.target.result;
+                const transaction = db.transaction([storeName], "readwrite");
+                const store = transaction.objectStore(storeName);
+
+                const deleteRequest = store.delete(id);
+                deleteRequest.onsuccess = () => {
+                    muatKomentar();
+                };
+            };
+        }
+
+        const komentarForm = document.getElementById("komentar-form");
+        komentarForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const namaInput = document.getElementById("nama").value;
+            const komentarInput = document.getElementById("komentar").value;
+            const timestamp = new Date().toISOString();
+
+            tambahkanKomentar(namaInput, komentarInput, timestamp);
+
+            document.getElementById("nama").value = "";
+            document.getElementById("komentar").value = "";
+        });
+
+        function tambahkanKomentar(nama, komentar, timestamp) {
+            const request = indexedDB.open(dbName);
+
+            request.onsuccess = (event) => {
+                const db = event.target.result;
+                const transaction = db.transaction([storeName], "readwrite");
+                const store = transaction.objectStore(storeName);
+
+                const komentarData = { nama, komentar, timestamp };
+                store.add(komentarData).onsuccess = () => {
+                    muatKomentar();
+                };
+            };
+        }
+
+        window.onload = initDatabase;
+    </script>
+<!-- IndexedDb End -->
+
+
+
+
+    <!-- Footer Start -->
+    <div class="container-fluid bg-dark text-white-50 footer pt-5">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.1s">                    
+                    <a href="index.html" class="d-inline-block mb-3">
+                        <img src="img/logo2.png" alt="Logo">
+                    </a>
+                    <p class="mb-0">Website ini di buat guna memenuhi Ulangan Akhir Semester 5, Mata Kuliah Pemrograman Web App</p>
+                </div>
+                <div class="col-md-12 col-lg-3 wow fadeIn" data-wow-delay="0.3s">
+                    <h5 class="text-white mb-4">Get In Touch</h5>
+                    <p><i class="fa fa-map-marker-alt me-3"></i>Tegal City, Central Java, Indonesia</p>
+                    <p><i class="fa fa-phone-alt me-3"></i>+62 823-2588-5066</p>
+                    <p><i class="fa fa-envelope me-3"></i>email@fadlanhafid.com</p>                    
+                </div>
+                
+            </div>
+        </div>
+        <div class="container wow fadeIn" data-wow-delay="0.1s">
+            <div class="copyright">
+                <div class="row justify-content-center">
+                    <div class="col-md-12 text-center">
+                        &copy; <a class="border-bottom" href="https://fadlanhafid.com/">FadlanHS</a>, All Right Reserved.</a>
+                    </div>                                      
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top pt-2" aria-label="Kembali ke Atas">
+        <i class="bi bi-arrow-up" aria-hidden="true"></i>
+      </a>
+      
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/counterup/counterup.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+    <script src="sw.js"></script>
+</body>
+
+</html>

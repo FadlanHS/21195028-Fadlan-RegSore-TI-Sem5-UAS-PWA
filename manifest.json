@@ -1,0 +1,53 @@
+{
+	"short_name": "FadlanHS",
+	"name": "FadlanHS - UAS PWA",
+	"icons": [
+		{
+			"src": "img/icon_144.png",
+			"sizes": "144x144",
+			"type": "image/png"
+		},
+		{
+			"src": "img/icon_192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "img/icon_196.png",
+			"sizes": "196x196",
+			"type": "image/png"
+		},
+		{
+			"src": "img/icon_512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "img/icon_maskable.png",
+			"sizes": "196x196",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	],
+	"id": "/index.html",
+	"start_url": "/index.html",
+	"display": "standalone",
+	"background_color": "#CCCCCC",
+	"theme_color": "#CCCCCC",
+	"orientation": "any",
+	"description": "Website ini di buat untuk keperluan UAS PWA",
+	"screenshots": [
+		{
+			"src": "img/screenshot1.png",
+			"type": "image/png",
+			"sizes": "360x720",
+			"form_factor": "narrow"
+		},
+		{
+			"src": "img/screenshot2.png",
+			"type": "image/png",
+			"sizes": "720x360",
+			"form_factor": "wide"
+		}
+	]
+}
